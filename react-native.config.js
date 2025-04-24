@@ -3,6 +3,7 @@
  */
 module.exports = {
   dependency: {
+    root: __dirname,
     platforms: {
       android: {
         cmakeListsPath: 'generated/jni/CMakeLists.txt',
