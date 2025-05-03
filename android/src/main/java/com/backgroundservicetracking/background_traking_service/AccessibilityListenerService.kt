@@ -5,6 +5,8 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
@@ -12,6 +14,8 @@ import androidx.core.app.NotificationCompat
 import java.time.Clock
 import java.time.LocalTime
 import java.util.Date
+import androidx.core.net.toUri
+import com.backgroundservicetracking.R
 
 class AccessibilityListenerService: AccessibilityService() {
   private val TAG = "AccessibilityListenerSe"
@@ -20,12 +24,19 @@ class AccessibilityListenerService: AccessibilityService() {
   private var lastTimeNotificationSent = 0L
 
 
+
   override fun onCreate() {
     super.onCreate()
     val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val soundUri = "android.resource://${applicationContext.packageName}/raw/notification_sound".toUri()
     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       notificationManager.createNotificationChannel(
-        NotificationChannel(NOTIFICATION_ID, "Super Drive Safe", NotificationManager.IMPORTANCE_HIGH)
+        NotificationChannel(NOTIFICATION_ID, "Super Drive Safe", NotificationManager.IMPORTANCE_HIGH).apply {
+          description = "Super Drive Safe Notification channel"
+          setSound(soundUri, AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ALARM)
+            .build())
+        }
       )
     }
   }
@@ -48,8 +59,8 @@ class AccessibilityListenerService: AccessibilityService() {
   override fun onAccessibilityEvent(event: AccessibilityEvent?) {
 
     // FILTER WHITE LIST
-    for(i in 0..< whiteListPackagePatterns.size) {
-      if(event?.packageName?.contains(whiteListPackagePatterns[i]) == true) {
+    for(element in whiteListPackagePatterns) {
+      if(event?.packageName?.contains(element) == true) {
         Log.d(TAG, "onAccessibilityEvent: There we go it is white list element")
         return
       }
