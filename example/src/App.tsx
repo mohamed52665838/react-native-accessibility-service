@@ -8,57 +8,14 @@ import {
 } from 'react-native';
 import {
   checkAccessibilityPermission,
-  requestAccessibilityService,
-  startSuperTracking,
-  stopSuperTracking,
   superTrackingServiceSettingsEnabled,
   superTrackingServiceStatus,
 } from 'react-native-background-service-tracking';
+import { startBackgroundTrackingCommand } from '../backgroundTrackingServiceCommands/startBackgroundTrackingServiceCommand';
+import { stopBackgroundServiceCommand } from '../backgroundTrackingServiceCommands/stopBackgroundTrackingServiceCommand';
 
 export default function App() {
-  const [isAccessibiltyPermitted, setIsAccessibilityPermitted] =
-    useState(false);
   const [isServiceRunning, setIsServiceRunning] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      checkAccessibilityPermission().then((value) => {
-        setIsAccessibilityPermitted(value);
-        if (value) {
-          console.log('Permission enabled');
-        } else {
-          console.log('Permission Disabled');
-        }
-      });
-    })();
-  }, []);
-
-  const accessibilityCallback = () => {
-    requestAccessibilityService().then((_) => {
-      setIsAccessibilityPermitted(true);
-      setTimeout(() => {
-        checkAccessibilityPermission().then((value) => {
-          setIsAccessibilityPermitted(value);
-        });
-      }, 1000);
-    });
-  };
-
-  const startSuperTrackingService = () => {
-    startSuperTracking().then((value) => {
-      if (value) {
-        console.log('Tracking service started');
-      }
-    });
-  };
-
-  const stopSuperTrackingService = () => {
-    stopSuperTracking().then((value) => {
-      if (value) {
-        console.log('Tracking service stoped');
-      }
-    });
-  };
 
   useEffect(() => {
     const subscriber = superTrackingServiceStatus((isServiceRunning) => {
@@ -74,6 +31,12 @@ export default function App() {
       }
     );
     return () => subscriber.remove();
+  }, []);
+
+  useEffect(() => {
+    checkAccessibilityPermission().then((value) => {
+      setIsServiceRunning(value);
+    });
   }, []);
 
   useEffect(() => {
@@ -95,20 +58,22 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Button
-        title="Enable Super Safe!"
-        onPress={accessibilityCallback}
-        disabled={isAccessibiltyPermitted}
-      />
       <View style={{ marginVertical: 8, gap: 8 }}>
         <Button
           title="Start Tracking"
-          onPress={startSuperTrackingService}
+          onPress={() =>
+            startBackgroundTrackingCommand(() => {
+              console.log('Service started');
+              setIsServiceRunning(true);
+            })
+          }
           disabled={isServiceRunning}
         />
         <Button
           title="Stop Tracking"
-          onPress={stopSuperTrackingService}
+          onPress={() =>
+            stopBackgroundServiceCommand(() => setIsServiceRunning(false))
+          }
           disabled={!isServiceRunning}
         />
       </View>

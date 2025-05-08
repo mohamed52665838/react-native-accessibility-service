@@ -6,6 +6,7 @@ import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
 import com.backgroundservicetracking.background_traking_service.AccessibilityListenerService
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
@@ -20,14 +21,12 @@ class BackgroundServiceTrackingModule(reactContext: ReactApplicationContext) :
 
   override fun startTrackingService(promise: Promise?) {
     Log.d(TAG, "Service Started")
-    AccessibilityListenerService.startService()
     emitIsServiceRunning(true)
     promise?.resolve(true)
   }
 
   override fun stopTrackingService(promise: Promise?) {
     Log.d(TAG, "Service Stopped")
-    AccessibilityListenerService.stopService()
     emitIsServiceRunning(false)
     promise?.resolve(true)
   }
@@ -66,11 +65,12 @@ class BackgroundServiceTrackingModule(reactContext: ReactApplicationContext) :
         return
       }
     }
-
     promise?.resolve(false)
   }
+
 
   companion object {
     const val NAME = "BackgroundServiceTracking"
   }
+
 }
